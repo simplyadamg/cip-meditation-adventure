@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {initialState,transition,meditationThoughtStep,trafficPausedForMeditation} from '../src/state.ts';
+import {initialState,transition,trafficPausedForMeditation} from '../src/state.ts';
 import {circleIntersectsRect,facingYaw,movementVector} from '../src/movement.ts';
 test('CIP invitation requires a full 60 active seconds',()=>{
  let s=transition(initialState(),{type:'sit',safe:true});
@@ -26,14 +26,10 @@ test('invalid time does not corrupt the meditation timer',()=>{
  const s=transition(initialState(),{type:'sit',safe:true});
  for(const dt of [NaN,-1,Infinity])assert.deepEqual(transition(s,{type:'tick',dt}),s);
 });
-test('CIP starts with ten active quiet seconds and resumes traffic when leaving',()=>{
+test('CIP pauses traffic and resumes it when leaving',()=>{
  let s=transition(initialState(),{type:'sit',safe:true});
- assert.equal(trafficPausedForMeditation(s),true);assert.equal(meditationThoughtStep(s),-1);
- s=transition(s,{type:'tick',dt:9.99});assert.equal(meditationThoughtStep(s),-1);
- s=transition(s,{type:'tick',dt:20,paused:true});assert.equal(meditationThoughtStep(s),-1);
- s=transition(s,{type:'tick',dt:.02});assert.equal(meditationThoughtStep(s),0);
+ assert.equal(trafficPausedForMeditation(s),true);
  const left=transition(s,{type:'move'});assert.equal(trafficPausedForMeditation(left),false);
- assert.equal(meditationThoughtStep(transition(left,{type:'sit',safe:true})),-1);
  assert.equal(trafficPausedForMeditation(transition(s,{type:'tick',dt:60})),true);
  assert.equal(trafficPausedForMeditation(transition(initialState(),{type:'sit',safe:false})),false);
 });

@@ -1,3 +1,6 @@
+import {cameraPreferences,defaultCamera,type CameraPreferences} from './player-controls.ts';
+import {thoughtTimingPreferences,defaultThoughtTiming,type ThoughtTiming} from './meditation-thoughts.ts';
+const legacyCrowdDefaults=['Is this what a group chat looks like offline?','We can just be here.','Still thinking about that croissant.','A little more room for everyone.','I thought I was the only one whose mind did that.','No perfect posture required.'];
 export const presets=[
  {name:'Rowan',description:'Pink shirt · red hair',color:'#bc586d'},
  {name:'Sage',description:'Green cap · backpack',color:'#617548'},
@@ -24,24 +27,29 @@ export const defaultPhrases:Record<string,string[]>={
  cars:['Hey, maybe check out CIP for meditation!','A little room for traffic, please. There’s a quieter spot at CIP.'],
  pedestrians:["Hey, the sidewalk isn’t a great place to meditate.",'Come on over to CIP—there’s room to pause with some company.'],
  cyclists:['A little room for the bike lane? Try CIP for a peaceful pause.'],
- meditation:['Did I remember to…?','There’s a thought. And another.','I don’t have to finish every thought.','Nothing to achieve right now.','Oh, hello, grocery list.','A breath. Some space. Other people.'],
- crowd:['Is this what a group chat looks like offline?','We can just be here.','Still thinking about that croissant.','A little more room for everyone.','I thought I was the only one whose mind did that.','No perfect posture required.'],
+ meditation:['Did I remember to…?','There’s a thought. And another.','I don’t have to finish every thought.','Nothing to achieve right now.','Oh, hello, grocery list.','A breath. Some space. Other people.',...legacyCrowdDefaults],
  invitation:['Maybe I don’t have to practice alone.'],
  welcome:['A little wandering. A little wondering. Maybe some meditation at CIP.']
 };
-import {cameraPreferences,defaultCamera,type CameraPreferences} from './player-controls';
-export interface Preferences { music:boolean; ambience:boolean; guidance:boolean; phrases:Record<string,string[]>; camera:CameraPreferences; }
+export interface Preferences { music:boolean; ambience:boolean; guidance:boolean; phrases:Record<string,string[]>; camera:CameraPreferences; thoughtTiming:ThoughtTiming; }
 export const STORAGE_KEY='cip-adventure.preferences.v1';
 export function loadPreferences():Preferences {
- const defaults={music:true,ambience:true,guidance:true,phrases:structuredClone(defaultPhrases),camera:{...defaultCamera}};
+ const defaults={music:true,ambience:true,guidance:true,phrases:structuredClone(defaultPhrases),camera:{...defaultCamera},thoughtTiming:{...defaultThoughtTiming}};
  try {
    const parsed=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
    if(!parsed || typeof parsed!=='object')return defaults;
    defaults.camera=cameraPreferences(parsed.camera);
+   defaults.thoughtTiming=thoughtTimingPreferences(parsed.thoughtTiming);
    for(const k of ['music','ambience','guidance'] as const)if(typeof parsed[k]==='boolean')defaults[k]=parsed[k];
    for(const k of Object.keys(defaultPhrases))if(Array.isArray(parsed.phrases?.[k])){
      const lines=parsed.phrases[k].filter((x:unknown)=>typeof x==='string'&&x.trim()).map((x:string)=>x.slice(0,240));
-     if(lines.length)defaults.phrases[k]=lines.slice(0,30);
+     if(lines.length)defaults.phrases[k]=lines.slice(0,k==='meditation'?60:30);
+   }
+   // Preserve custom legacy Crowd lines without reintroducing an obsolete category.
+   if(Array.isArray(parsed.phrases?.crowd)){
+     const custom=parsed.phrases.crowd.filter((x:unknown):x is string=>typeof x==='string'&&!!x.trim())
+       .map((x:string)=>x.trim().slice(0,240)).filter((x:string)=>!legacyCrowdDefaults.includes(x));
+     defaults.phrases.meditation=[...new Set([...defaults.phrases.meditation,...custom])].slice(0,60);
    }
  }catch{/* Empty, blocked or malformed localStorage falls back safely. */}
  return defaults;

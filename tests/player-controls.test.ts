@@ -32,6 +32,7 @@ test('collision blocks translation without changing the steered heading',()=>{
 test('camera data migrates old preferences and clamps corrupt stored values',()=>{
  assert.deepEqual(cameraPreferences(undefined),defaultCamera);
  assert.deepEqual(cameraPreferences({height:NaN,distance:'bad',shoulder:Infinity}),defaultCamera);
- assert.deepEqual(cameraPreferences({height:100,distance:-1,shoulder:45,view:0}),{height:40,distance:18,shoulder:16,view:16});
+ assert.deepEqual(cameraPreferences({height:200,distance:-1,shoulder:90,view:0}),{height:100,distance:8,shoulder:60,view:10});
+ const wide={height:90,distance:140,shoulder:-60,view:100};assert.deepEqual(cameraPreferences(wide),wide);
  const custom={height:12,distance:25,shoulder:4,view:21};assert.deepEqual(cameraPreferences(JSON.parse(JSON.stringify(custom))),custom);
 });

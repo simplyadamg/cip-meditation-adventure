@@ -1,6 +1,6 @@
 export interface CameraPreferences {height:number;distance:number;shoulder:number;view:number;}
 export const defaultCamera:CameraPreferences={height:22,distance:38,shoulder:-12,view:28};
-export const cameraLimits={height:[8,40],distance:[18,55],shoulder:[-16,16],view:[16,36]} as const;
+export const cameraLimits={height:[4,100],distance:[8,140],shoulder:[-60,60],view:[10,100]} as const;
 export function cameraPreferences(value:unknown):CameraPreferences{
  const result={...defaultCamera};
  if(value&&typeof value==='object')for(const key of Object.keys(defaultCamera) as (keyof CameraPreferences)[]){

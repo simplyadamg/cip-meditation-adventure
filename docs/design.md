@@ -18,13 +18,15 @@ Clark Street has green bike lanes on both sides, with bicycles traveling in both
 
 Approaching CIP automatically zooms the camera; players can still move and sit anywhere across its sidewalk frontage. Space starts hands-free meditation: glow, gradually joining meditators, distracting thoughts appearing and fading. Sixty continuous seconds brings an invitation. Standing or walking before then resets the sequence.
 
-The first ten active seconds of CIP meditation are quiet, with no thought bubbles. After that, player and crowd thoughts share a cloud outline and small trailing dots; spoken NPC dialogue uses a pointed speech-bubble tail. All ordinary pedestrian, car and bicycle traffic pauses immediately during CIP meditation and remains paused at the invitation. Only joining meditators continue moving. Standing before the invitation or restarting resumes ordinary traffic.
+By default, the first ten active seconds of CIP meditation are quiet. Settings can change the player's first-thought delay (0–60 seconds) and the quiet gap between successive thoughts (0–60 seconds, default 3). Each meditation thought is visible for 4.5 seconds. Saved timing changes apply to the next sit, and do not change the 60-second invitation timer. Only one thought bubble can appear at CIP at once: the first belongs to the player, then subsequent thoughts move around seated meditators. All use the same editable Meditation phrase pool and cloud outline with small trailing dots. There is no separate Crowd category; custom legacy Crowd phrases migrate into Meditation without duplicates. The invitation thought replaces the current cloud, then shared meditation thoughts resume. Spoken NPC dialogue uses a pointed speech-bubble tail. All ordinary pedestrian, car and bicycle traffic pauses immediately during CIP meditation and remains paused at the invitation. Only joining meditators continue moving. Standing before the invitation or restarting resumes ordinary traffic.
 
 After invitation, the player is locked into the seated scene. Neighbors keep joining (bounded to a performance-safe crowd), and thoughts continue throughout the crowd. A link opens https://wakingup.carrd.co and Restart begins again. No health, combat, inventory, points, enemies or conventional win screen.
 
 A gear opens settings. All authored thought phrases ship with generated defaults and are editable and saved only in this browser. Music and neighborhood ambience mute independently. Footsteps, bicycle bells and polite honks are not muted by those controls.
 
 Settings also provides walking-camera height, distance, shoulder offset and view size with live preview, Save and Restore camera defaults. Restart preserves saved camera preferences. Mouse motion does not rotate the camera. Storefront and CIP meditation framing remain automatic. The Foster start is on the east sidewalk, facing north toward CIP; subsequent forward movement follows whichever direction the player turns to face.
+
+Expanded camera ranges: height 4–100, distance 8–140, shoulder offset −60 to +60, and view size 10–100. Fog distance follows the camera so pulling back does not hide the neighborhood in fog; very wide views still expose provisional map edges.
 
 ## Routine implementation defaults
 
