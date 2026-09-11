@@ -1,0 +1,7 @@
+.camera-settings{border:1px solid #dccb9755;padding:16px;margin:14px 0}
+.camera-settings legend{font-size:1rem;padding:0 8px}
+.camera-settings label{display:flex;justify-content:space-between;gap:12px;font-size:.9rem}
+.camera-settings output{font-variant-numeric:tabular-nums;color:#ffe19c}
+.camera-settings input[type=range]{display:block;width:100%;margin:8px 0 20px;accent-color:#e3c782}
+.camera-settings .quiet{padding:0;font-size:.85rem}
+@media(min-width:1000px){dialog#settings{width:430px;margin:4vh 24px 4vh auto;max-height:92vh}dialog#settings::backdrop{background:#092c3422;backdrop-filter:none}}

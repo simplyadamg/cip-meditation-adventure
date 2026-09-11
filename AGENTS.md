@@ -17,7 +17,7 @@ Read `docs/design.md`, `harness/features.json`, and `harness/progress.md` before
 ## Product invariants
 
 - Original 3D assets authored through Blender MCP; reproducible source scripts and `.blend` + `.glb` outputs. References guide color, character proportions, and detail, not exact addresses or adjacency.
-- Desktop, single-player, pixelated RPG view; quarter-turn camera and zoom; camera-relative WASD/arrows, Space meditate, Enter examine.
+- Desktop, single-player, pixelated RPG view; Q/E camera orbit and zoom. Per user revision 2026-09-11, W/Up walks forward along character heading, S/Down backs up, and A/D or Left/Right steer. Camera follows smoothly over the shoulder and cannot change heading. Browser-local camera controls adjust height, distance, shoulder offset and view size. Space meditates, Enter examines non-CIP storefronts.
 - Public interruptions automatically stand the character up with humor. Only CIP's sidewalk frontage protects meditation.
 - CIP approach zooms automatically and permits movement throughout frontage. CIP meditation runs hands-free for 60 continuous active seconds. Leaving resets progress.
 - Invitation locks movement and meditation exit; crowd and thoughts continue. Meetup link and Restart remain accessible. Restart preserves browser phrase/audio preferences.

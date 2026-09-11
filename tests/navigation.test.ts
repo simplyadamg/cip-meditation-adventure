@@ -46,7 +46,7 @@ test('swivel follows shortest wraparound and gently settles behind the left shou
  for(let i=0;i<300;i++)angle=dampAngle(angle,targetYaw,1.1,1/60);
  assert.ok(Math.abs(Math.atan2(Math.sin(angle-targetYaw),Math.cos(angle-targetYaw)))<.002);
 });
-test('Up alone follows the entire real Blender sidewalk from Foster to CIP without drift',()=>{
+test('Blender sidewalk has a continuous clear corridor from Foster to CIP',()=>{
  const clear=(x:number,y:number)=>!colliders.some(r=>circleIntersectsRect(x,y,.48,r));
  let p={x:road(7)+12.7,y:7};
  for(let i=0;i<1500&&p.y<cipY;i++){

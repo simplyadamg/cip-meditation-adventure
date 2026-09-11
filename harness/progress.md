@@ -45,3 +45,14 @@ Next action: user reviews the local playable sample. Only after review feedback 
 ## 2026-09-10 — interruption bubble fix
 
 - Fixed repeated sidewalk interruption announcements. The interrupted state persists until movement/reset, but the thought and bell now trigger only once on entry to that state, preventing phrase cycling/flicker.
+
+## 2026-09-11 — heading controls, camera settings and quiet CIP meditation
+
+- Superseded the temporary north-locked controls with user-requested heading-relative forward/backward movement and left/right steering. Camera follows independently; short keyboard taps are retained between animation frames.
+- Added browser-saved camera height, distance, shoulder offset and view size, live preview and restore defaults. Updated control hints and agreed design.
+- CIP meditation begins with ten active seconds without thoughts. Player and crowd use one cloud style with dotted tails; NPC speech uses a pointed tail.
+- Ordinary cars, bicycles and pedestrians pause during CIP meditation and invitation; joining meditators continue and avoid occupied seat locations. Exiting or restarting restores normal traffic.
+- Baseline 19 tests passed; updated 25 tests, typecheck and build passed. Browser evidence includes turning then walking forward, persisted camera preferences, quiet opening, a real full-minute invitation, unchanged ordinary traffic and restart resumption. Details and limitations: `docs/qa-controls-2026-09-11.md`.
+- Historical correction: GitHub linking and Vercel deployment were completed after the initializer's blocked note. The preceding commit `bc7017a` contains the Blender export/navigation update. This entry concerns the next local iteration, not a new deployment.
+
+Checkpoint remains playable-sample. Final neighborhood production and release verification are not approved or complete.

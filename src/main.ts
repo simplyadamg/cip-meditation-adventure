@@ -1,25 +1,29 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {initialState,transition,type Action} from './state';
+import {initialState,transition,trafficPausedForMeditation,meditationThoughtStep,type Action} from './state';
 import {presets,defaultPhrases,loadPreferences,STORAGE_KEY} from './content';
 import {shops,streets,cip,limit,roadX,inCipFront,layout} from './map';
 import {NeighborhoodAudio} from './audio';
-import {circleIntersectsRect,facingYaw,moveAlongStreet,moveBody,aheadBlocked,type Rect,type Point} from './movement';
-import {routeAround,distance,segmentClear,dampAngle,shoulderYaw,facadeView} from './navigation';
+import {circleIntersectsRect,facingYaw,moveBody,aheadBlocked,type Rect,type Point} from './movement';
+import {routeAround,distance,segmentClear,dampAngle,facadeView} from './navigation';
+import {steer,followOffset,defaultCamera,type CameraPreferences} from './player-controls';
 import './style.css';
 import './compass.css';
+import './camera-settings.css';
+import './bubbles.css';
 
 const $=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
 const canvas=$<HTMLCanvasElement>('world'),settings=$<HTMLDialogElement>('settings');
 const preferences=loadPreferences(),audio=new NeighborhoodAudio();
-let state=initialState(),started=false,ready=false,selected=0,angle=Math.PI/4,zoom=28,settingsOpen=false;
+let state=initialState(),started=false,ready=false,selected=0,angle=Math.PI/4,zoom=preferences.camera.view,settingsOpen=false;
 let player:THREE.Group;const models:THREE.Group[]=[];
 let bubbleUntil=0,elapsed=0,lastTime=performance.now(),lastStep=0,lastThought=-1;
 let inspected:typeof shops[number]|null=null,near:typeof shops[number]|null=null,joined=0;
 const keys=new Set<string>();let nudgeUntil=0,lastResponse=-10;
 let lastOrbit=-10,autoPath:Point[]=[],yieldingTo:THREE.Group|null=null,currentView=28;
-let moveCameraGoal:number|null=null,moveCommand='';
-const walkingCameraHeight=22;
+const taps=new Map<string,number>();
+const pressed=(key:string)=>keys.has(key)||(taps.get(key)??0)>elapsed;
+const clearInput=()=>{keys.clear();taps.clear();};
 const actorMargin=75;
 const scene=new THREE.Scene();scene.background=new THREE.Color('#aacad0');scene.fog=new THREE.Fog('#aacad0',80,150);
 const camera=new THREE.OrthographicCamera(-30,30,22,-22,.1,250);
@@ -43,7 +47,7 @@ let staticObstacles:Rect[]=[];
 const obstacleBuckets=new Map<string,Rect[]>();
 const replies:{owner:THREE.Group;el:HTMLElement;until:number;category:string}[]=[];
 const crowdLabels:HTMLElement[]=[];
-for(let i=0;i<3;i++){const el=document.createElement('div');el.className='crowd-thought';el.hidden=true;$('crowd-bubbles').append(el);crowdLabels.push(el);}
+for(let i=0;i<3;i++){const el=document.createElement('div');el.className='thought thought-cloud';el.dataset.speaker='meditator';el.hidden=true;$('crowd-bubbles').append(el);crowdLabels.push(el);}
 const indexes:Record<string,number>={};
 function phrase(category:string){const list=preferences.phrases[category]||defaultPhrases[category]||[''];const n=indexes[category]||0;indexes[category]=n+1;return list[n%list.length];}
 function thought(category:string,seconds=5){$('bubble').textContent=phrase(category);bubbleUntil=elapsed+seconds;$('bubble').hidden=false;}
@@ -53,7 +57,10 @@ function send(action:Action){
    joined=0;lastThought=-1;
    for(const [c,trip] of crowdTrips){trip.leaving=true;trip.seated=false;trip.goal=entryPoint(c.userData.entrySide??1);pose(c,false);travels.delete(c);}
  }
- if(state.mode==='meditating'&&previous.mode!=='meditating'){lastThought=-1;inspected=null;bubbleUntil=0;}
+ if(state.mode==='meditating'&&previous.mode!=='meditating'){
+   lastThought=-1;inspected=null;bubbleUntil=0;
+   if(state.safe){for(const r of replies)r.el.remove();replies.length=0;}
+ }
  if(previous.mode!=='invitation'&&state.mode==='invitation'){$('invitation').hidden=false;thought('invitation',8);}
 }
 function pose(root:THREE.Group,sitting:boolean){
@@ -110,13 +117,13 @@ presets.forEach((preset,i)=>{
  button.addEventListener('click',()=>{selected=i;document.querySelectorAll('.preset').forEach((el,j)=>{el.classList.toggle('selected',i===j);el.setAttribute('aria-pressed',String(i===j));});if(ready){const p=player.position.clone();scene.remove(player);player=models[i].clone(true);player.scale.setScalar(1.25);player.position.copy(p);pose(player,false);scene.add(player);}});$('presets').append(button);
 });
 function reset(){
- state=initialState();started=true;inspected=null;joined=0;lastThought=-1;keys.clear();angle=Math.PI/4;zoom=28;nudgeUntil=0;lastResponse=-10;
+ state=initialState();started=true;inspected=null;joined=0;lastThought=-1;clearInput();zoom=preferences.camera.view;nudgeUntil=0;lastResponse=-10;
  for(const r of replies)r.el.remove();replies.length=0;
- autoPath=[];yieldingTo=null;lastOrbit=-10;moveCameraGoal=null;moveCommand='';travels.clear();crowdTrips.clear();
+ autoPath=[];yieldingTo=null;lastOrbit=-10;travels.clear();crowdTrips.clear();
  for(const root of [...cars,...bikes,...neighbors.map(n=>n.root)]){root.userData.stopUntil=0;root.userData.announced=false;root.position.copy(root.userData.home);}
  player.position.set(roadX(7)+layout.walkingCenter,.26,-7);
- player.rotation.y=facingYaw(roadX(7.1)-roadX(7),-.1);angle=shoulderYaw(player.rotation.y);
- offset.set(Math.sin(angle)*38,walkingCameraHeight,Math.cos(angle)*38);
+ player.rotation.y=facingYaw(roadX(7.1)-roadX(7),-.1);angle=player.rotation.y+Math.PI;
+ const initialOffset=followOffset(angle,preferences.camera);offset.set(initialOffset.x,initialOffset.y,initialOffset.z);
  pose(player,false);for(const c of crowd)c.visible=false;
  $('invitation').hidden=true;$('start').hidden=true;thought('welcome',6);cameraTarget.copy(player.position);canvas.focus();
 }
@@ -125,12 +132,24 @@ $('restart').addEventListener('click',reset);
 $('restart-top').addEventListener('click',()=>{if(started)reset();});
 $('sample-jump').addEventListener('click',()=>{if(!started||state.mode==='invitation')return;send({type:'move'});inspected=null;autoPath=[];yieldingTo=null;player.position.set(cip.x-6,.26,-cip.y);cameraTarget.copy(player.position);thought('cip',5);canvas.focus();});
 const category=$<HTMLSelectElement>('phrase-category'),editor=$<HTMLTextAreaElement>('phrase-editor');
-let draft=structuredClone(preferences.phrases),currentCategory='middle-east';
+let draft=structuredClone(preferences.phrases),currentCategory='middle-east',cameraDraft={...preferences.camera};
+function showCameraSettings(){
+ for(const key of Object.keys(defaultCamera) as (keyof CameraPreferences)[]){
+   $<HTMLInputElement>(`camera-${key}`).value=String(cameraDraft[key]);
+   $(`camera-${key}-value`).textContent=key==='shoulder'?(cameraDraft[key]===0?'Centered':`${Math.abs(cameraDraft[key])} ${cameraDraft[key]<0?'left':'right'}`):String(cameraDraft[key]);
+ }
+}
+for(const key of Object.keys(defaultCamera) as (keyof CameraPreferences)[]){
+ $(`camera-${key}`).addEventListener('input',()=>{cameraDraft[key]=$<HTMLInputElement>(`camera-${key}`).valueAsNumber;showCameraSettings();});
+}
+$('camera-reset').addEventListener('click',()=>{cameraDraft={...defaultCamera};showCameraSettings();});
+$('settings-open').addEventListener('click',()=>{cameraDraft={...preferences.camera,view:zoom};showCameraSettings();clearInput();});
+$('settings-form').addEventListener('submit',()=>{preferences.camera={...cameraDraft};zoom=cameraDraft.view;});
 for(const id of Object.keys(defaultPhrases)){const op=document.createElement('option');op.value=id;op.textContent=shops.find(s=>s.id===id)?.name||({cars:'Cars · driver dialogue',pedestrians:'Pedestrians · sidewalk dialogue',cyclists:'Cyclists · bike-lane dialogue'} as Record<string,string>)[id]||id[0].toUpperCase()+id.slice(1);category.append(op);}
 const stash=()=>{const lines=editor.value.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>x.slice(0,240)).slice(0,30);if(lines.length)draft[currentCategory]=lines;};
 category.addEventListener('change',()=>{stash();currentCategory=category.value;editor.value=draft[currentCategory].join('\n');});
 $('settings-open').addEventListener('click',()=>{draft=structuredClone(preferences.phrases);editor.value=draft[currentCategory].join('\n');$<HTMLInputElement>('music-toggle').checked=preferences.music;$<HTMLInputElement>('ambience-toggle').checked=preferences.ambience;$<HTMLInputElement>('guidance-toggle').checked=preferences.guidance;settingsOpen=true;keys.clear();settings.showModal();$('save-status').textContent='';void audio.pause();});
-function closeSettings(){settingsOpen=false;settings.close();keys.clear();canvas.focus();if(started)void audio.resume();}
+function closeSettings(){settingsOpen=false;settings.close();clearInput();canvas.focus();if(started)void audio.resume();}
 $('settings-close').addEventListener('click',closeSettings);settings.addEventListener('cancel',e=>{e.preventDefault();closeSettings();});
 $('reset-phrases').addEventListener('click',()=>{draft[currentCategory]=[...defaultPhrases[currentCategory]];editor.value=draft[currentCategory].join('\n');});
 $('settings-form').addEventListener('submit',e=>{e.preventDefault();stash();preferences.phrases=draft;preferences.music=$<HTMLInputElement>('music-toggle').checked;preferences.ambience=$<HTMLInputElement>('ambience-toggle').checked;preferences.guidance=$<HTMLInputElement>('guidance-toggle').checked;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(preferences));$('save-status').textContent='Saved in this browser.';}catch{$('save-status').textContent='Changes work for this visit. Browser storage is unavailable.';}audio.musicEnabled=preferences.music;audio.ambienceEnabled=preferences.ambience;});
@@ -138,8 +157,9 @@ audio.musicEnabled=preferences.music;audio.ambienceEnabled=preferences.ambience;
 window.addEventListener('keydown',e=>{
  if(!started||settingsOpen||['INPUT','SELECT','TEXTAREA','BUTTON','A'].includes((e.target as HTMLElement)?.tagName))return;
  const k=e.key.toLowerCase();if([' ','arrowup','arrowdown','arrowleft','arrowright','enter'].includes(k))e.preventDefault();keys.add(k);if(e.repeat)return;
+ if(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright'].includes(k))taps.set(k,elapsed+.08);
  if((k==='q'||k==='e')&&!inspected&&!(state.safe&&state.mode!=='walking')){angle+=(k==='q'?-1:1)*Math.PI/2;lastOrbit=elapsed;}
- if(k==='='||k==='+')zoom=Math.max(13,zoom-2);if(k==='-')zoom=Math.min(32,zoom+2);
+ if(k==='='||k==='+')zoom=Math.max(16,zoom-2);if(k==='-')zoom=Math.min(36,zoom+2);
  if(k===' '&&elapsed>=nudgeUntil){autoPath=[];yieldingTo=null;if(state.mode==='examining')inspected=null;send({type:'sit',safe:inCipFront(player.position.x,-player.position.z)});}
  if(k==='enter'&&near&&near.id!=='cip'&&state.mode!=='meditating'&&state.mode!=='invitation'){
      if(inspected){inspected=null;autoPath=[];send({type:'move'});}else{
@@ -149,9 +169,9 @@ window.addEventListener('keydown',e=>{
  }
  if(k==='escape'&&state.mode!=='invitation'){inspected=null;autoPath=[];send({type:'move'});}
 });
-window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',()=>keys.clear());
-document.addEventListener('visibilitychange',()=>{keys.clear();lastTime=performance.now();if(document.hidden)void audio.pause();else if(started&&!settingsOpen)void audio.resume();});
-canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=THREE.MathUtils.clamp(zoom+Math.sign(e.deltaY)*1.5,13,32);},{passive:false});
+window.addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));window.addEventListener('blur',clearInput);
+document.addEventListener('visibilitychange',()=>{clearInput();lastTime=performance.now();if(document.hidden)void audio.pause();else if(started&&!settingsOpen)void audio.resume();});
+canvas.addEventListener('wheel',e=>{e.preventDefault();zoom=THREE.MathUtils.clamp(zoom+Math.sign(e.deltaY)*1.5,16,36);},{passive:false});
 canvas.addEventListener('pointerdown',()=>canvas.focus());
 function resize(){renderer.setSize(Math.max(1,Math.floor(innerWidth/2)),Math.max(1,Math.floor(innerHeight/2)),false);}window.addEventListener('resize',resize);resize();
 const playerRadius=.48;
@@ -171,7 +191,7 @@ function unoccupied(x:number,y:number,except?:THREE.Group){
 function reply(owner:THREE.Group,kind:'cars'|'pedestrians'|'cyclists'){
  if(elapsed-lastResponse<5.5||inCipFront(player.position.x,-player.position.z)||state.mode==='invitation')return false;
  lastResponse=elapsed;
- const el=document.createElement('div');el.className='thought actor-thought';el.dataset.speaker=kind;el.setAttribute('role','status');el.textContent=phrase(kind);el.hidden=false;$('app').append(el);replies.push({owner,el,until:elapsed+5.5,category:kind});bubbleUntil=0;
+ const el=document.createElement('div');el.className='thought speech-bubble actor-thought';el.dataset.speaker=kind;el.setAttribute('role','status');el.textContent=phrase(kind);el.hidden=false;$('app').append(el);replies.push({owner,el,until:elapsed+5.5,category:kind});bubbleUntil=0;
  if(kind==='cars')audio.honk();else if(kind==='cyclists')audio.bell();
  owner.userData.stopUntil=elapsed+3.5;
  if(state.mode==='meditating'){
@@ -244,7 +264,7 @@ function seatFor(index:number):Point|undefined{
  const candidates:Point[]=[];
  for(let row=0;row<10;row++)for(let col=0;col<7;col++){
    const p={x:cip.x-6-row*1.9,y:cip.y+(col-3)*1.95};
-   if(groundClear(p.x,p.y)&&distance(p,point(player))>1.5)candidates.push(p);
+   if(unoccupied(p.x,p.y)&&distance(p,point(player))>1.5)candidates.push(p);
  }
  return candidates[index];
 }
@@ -278,29 +298,20 @@ function updateCrowd(dt:number){
 function update(dt:number){
  const paused=settingsOpen||document.hidden;if(!paused)elapsed+=dt;
  if(started&&!paused){
-   let dx=Number(keys.has('d')||keys.has('arrowright'))-Number(keys.has('a')||keys.has('arrowleft'));
-   let dy=Number(keys.has('w')||keys.has('arrowup'))-Number(keys.has('s')||keys.has('arrowdown'));
+   const dx=Number(pressed('d')||pressed('arrowright'))-Number(pressed('a')||pressed('arrowleft'));
+   const dy=Number(pressed('w')||pressed('arrowup'))-Number(pressed('s')||pressed('arrowdown'));
    const moving=(dx!==0||dy!==0)&&state.mode!=='invitation';
    if(moving){
      autoPath=[];yieldingTo=null;
      if(state.mode!=='walking'){send({type:'move'});inspected=null;}
-     const length=Math.hypot(dx,dy);dx/=length;dy/=length;
-     const command=`${dx},${dy}`;
-     if(command!==moveCommand||moveCameraGoal===null){
-       const forwardX=roadX(-player.position.z+dy)-roadX(-player.position.z)+dx;
-       moveCameraGoal=shoulderYaw(facingYaw(forwardX,-dy));moveCommand=command;
-     }
-     const before=player.position.clone();const next=moveAlongStreet(point(player),dx,dy,9*dt,roadX,unoccupied);
+     const control=steer(player.rotation.y,dx,dy,dt);player.rotation.y=control.yaw;
+     const before=player.position.clone();const next=moveBody(point(player),{x:control.x,y:-control.z},unoccupied);
      player.position.x=next.x;player.position.z=-next.y;
      const moved=player.position.distanceTo(before)>.001;
-     if(moved){player.rotation.y=facingYaw(player.position.x-before.x,player.position.z-before.z);player.position.y=.26+Math.abs(Math.sin(elapsed*14))*.08;if(elapsed-lastStep>.31){audio.step();lastStep=elapsed;}
-       if(elapsed-lastOrbit>.45){
-         const error=Math.atan2(Math.sin(moveCameraGoal-angle),Math.cos(moveCameraGoal-angle));
-         angle=Math.abs(error)<.003?moveCameraGoal:dampAngle(angle,moveCameraGoal,1.1,dt);
-       }
-     }
+     player.position.y=.26;
+     if(moved){player.position.y+=Math.abs(Math.sin(elapsed*14))*.05;if(elapsed-lastStep>.31){audio.step();lastStep=elapsed;}}
    }else{
-     player.position.y=.26;moveCameraGoal=null;moveCommand='';
+     player.position.y=.26;
      if(autoPath.length){
        const p=point(player),goal=autoPath[0],d=distance(p,goal),step=Math.min(3.2*dt,d);
        const next=moveBody(p,{x:(goal.x-p.x)/Math.max(d,.001)*step,y:(goal.y-p.y)/Math.max(d,.001)*step},unoccupied);
@@ -312,7 +323,7 @@ function update(dt:number){
    }
    send({type:'tick',dt});
    if(state.mode==='meditating'&&state.safe){
-     const step=Math.floor(state.elapsed/7.5);if(step!==lastThought){lastThought=step;thought('meditation',4.5);}
+     const step=meditationThoughtStep(state);if(step>=0&&step!==lastThought){lastThought=step;thought('meditation',4.5);}
      joined=Math.min(20,Math.floor(state.elapsed/2.8));
    }
    if(state.mode==='invitation')joined=Math.min(48,20+Math.floor((elapsed-invitationStart)/2));
@@ -337,6 +348,7 @@ function update(dt:number){
  glow.intensity=sitting&&state.safe?3+Math.min(state.elapsed/12,3):0;glow.position.copy(player.position).add(new THREE.Vector3(0,1.8,0));
  circle.visible=sitting&&state.safe;circle.position.set(player.position.x,.29,player.position.z);circle.scale.setScalar(1.2+Math.sin(elapsed*1.4)*.06);
  if(!paused&&started){
+  if(!trafficPausedForMeditation(state)){
   const sittingOutside=started&&state.mode==='meditating'&&!state.safe;
   const sidewalkSit=sittingOutside&&Math.abs(player.position.x-roadX(py))>layout.roadHalfWidth;
   const seeker=sidewalkSit?neighbors.filter(n=>Math.sign(player.position.x-roadX(py))===n.side).sort((a,b)=>a.root.position.distanceTo(player.position)-b.root.position.distanceTo(player.position))[0]:undefined;
@@ -379,11 +391,20 @@ function update(dt:number){
     recycle(root,side,side*lane);
    }
   }
-  if(started)updateCrowd(dt);
+  }else{
+    for(const root of [...cars,...bikes])root.userData.stopped=true;
+  }
+  updateCrowd(dt);
  }
  target.copy(player.position);target.y=1.2;
  let view=zoom;
  const focus=inspected??(safe&&sitting?cip:null);
+ const cameraPrefs=settingsOpen?cameraDraft:preferences.camera;
+ if(!focus&&started&&elapsed-lastOrbit>.65){
+   const heading=player.rotation.y+Math.PI,error=Math.atan2(Math.sin(heading-angle),Math.cos(heading-angle));
+   angle=Math.abs(error)<.002?heading:dampAngle(angle,heading,3.5,dt);
+ }
+ if(settingsOpen)view=cameraPrefs.view;
  if(focus){
    const height=focus.id==='cip'?8:focus.id==='tea'?7.1:5.6+shops.indexOf(focus)%3*.8;
    // Include the back of the roof as well as the facade and the player's feet.
@@ -395,7 +416,8 @@ function update(dt:number){
  else if(safe){view=20;}
  if(!started){target.set(cip.x-3,2,-cip.y);view=23;}
  cameraTarget.lerp(target,1-Math.exp(-dt*5));
- const desiredOffset=new THREE.Vector3(Math.sin(angle)*(focus?18:38),focus?7:walkingCameraHeight,Math.cos(angle)*(focus?18:38));
+ const follow=followOffset(angle,cameraPrefs);
+ const desiredOffset=focus?new THREE.Vector3(Math.sin(angle)*18,7,Math.cos(angle)*18):new THREE.Vector3(follow.x,follow.y,follow.z);
  offset.lerp(desiredOffset,1-Math.exp(-dt*5));camera.position.copy(cameraTarget).add(offset);camera.lookAt(cameraTarget);
  currentView+=(view-currentView)*(1-Math.exp(-dt*4));
  const aspect=innerWidth/innerHeight;camera.left=-currentView*aspect/2;camera.right=currentView*aspect/2;camera.top=currentView/2;camera.bottom=-currentView/2;camera.updateProjectionMatrix();
@@ -417,7 +439,7 @@ function update(dt:number){
  for(let i=replies.length-1;i>=0;i--){const r=replies[i];if(elapsed>=r.until){r.el.remove();replies.splice(i,1);}else placeLabel(r.el,r.owner.position,r.category==='cars'?2.3:3);}
  for(let i=0;i<crowdLabels.length;i++){
    const seated=crowd.filter(c=>crowdTrips.get(c)?.seated);
-   const el=crowdLabels[i],visible=seated.length>5&&Math.floor(elapsed+i*2)%11<5;
+   const el=crowdLabels[i],visible=meditationThoughtStep(state)>=0&&seated.length>5&&Math.floor(elapsed+i*2)%11<5;
    el.hidden=!visible;
    if(visible){const idx=(Math.floor(elapsed/11)*3+i*7)%seated.length;placeLabel(el,seated[idx].position,2.2);const phase=String(Math.floor(elapsed/11));if(el.dataset.phase!==phase){el.dataset.phase=phase;el.textContent=phrase('crowd');}}
  }

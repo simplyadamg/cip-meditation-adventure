@@ -29,13 +29,15 @@ export const defaultPhrases:Record<string,string[]>={
  invitation:['Maybe I don’t have to practice alone.'],
  welcome:['A little wandering. A little wondering. Maybe some meditation at CIP.']
 };
-export interface Preferences { music:boolean; ambience:boolean; guidance:boolean; phrases:Record<string,string[]>; }
+import {cameraPreferences,defaultCamera,type CameraPreferences} from './player-controls';
+export interface Preferences { music:boolean; ambience:boolean; guidance:boolean; phrases:Record<string,string[]>; camera:CameraPreferences; }
 export const STORAGE_KEY='cip-adventure.preferences.v1';
 export function loadPreferences():Preferences {
- const defaults={music:true,ambience:true,guidance:true,phrases:structuredClone(defaultPhrases)};
+ const defaults={music:true,ambience:true,guidance:true,phrases:structuredClone(defaultPhrases),camera:{...defaultCamera}};
  try {
    const parsed=JSON.parse(localStorage.getItem(STORAGE_KEY)||'null');
    if(!parsed || typeof parsed!=='object')return defaults;
+   defaults.camera=cameraPreferences(parsed.camera);
    for(const k of ['music','ambience','guidance'] as const)if(typeof parsed[k]==='boolean')defaults[k]=parsed[k];
    for(const k of Object.keys(defaultPhrases))if(Array.isArray(parsed.phrases?.[k])){
      const lines=parsed.phrases[k].filter((x:unknown)=>typeof x==='string'&&x.trim()).map((x:string)=>x.slice(0,240));
