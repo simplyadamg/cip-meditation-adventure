@@ -11,8 +11,19 @@ geo=json.loads((ROOT/'src/geography.json').read_text())['results']
 origin=next(p['location'] for p in geo if 'Foster' in p['query'])
 streets=sorted([{'name':p['query'].split(' and W ')[1],'y':(p['location']['lat']-origin['lat'])*32000,'x':(p['location']['lng']-origin['lng'])*22000} for p in geo if ' and ' in p['query']],key=lambda p:p['y'])
 def road(y):
-    for a,b in zip(streets,streets[1:]):
-        if a['y']<=y<=b['y']:return a['x']+(b['x']-a['x'])*(y-a['y'])/(b['y']-a['y'])
+    def slope(j):return (streets[j+1]['x']-streets[j]['x'])/(streets[j+1]['y']-streets[j]['y'])
+    def tangent(j):
+        if j==0:return slope(0)
+        if j==len(streets)-1:return slope(j-1)
+        a,b=slope(j-1),slope(j)
+        if a*b<=0:return 0
+        ha=streets[j]['y']-streets[j-1]['y'];hb=streets[j+1]['y']-streets[j]['y']
+        wa,wb=2*hb+ha,hb+2*ha
+        return (wa+wb)/(wa/a+wb/b)
+    for i,(a,b) in enumerate(zip(streets,streets[1:])):
+        if a['y']<=y<=b['y']:
+            h=b['y']-a['y'];t=(y-a['y'])/h
+            return (2*t**3-3*t*t+1)*a['x']+(t**3-2*t*t+t)*h*tangent(i)+(-2*t**3+3*t*t)*b['x']+(t**3-t*t)*h*tangent(i+1)
     return streets[0 if y<0 else -1]['x']
 locations=[('middle-east','MIDDLE EAST BAKERY',5200),('museum','SWEDISH AMERICAN MUSEUM',5211),('bookstore','WOMEN & CHILDREN FIRST',5233),('galleria','ANDERSONVILLE GALLERIA',5247),('gym','CHEETAH GYM',5248),('larson','LOST LARSON',5318),('calo','CALO RISTORANTE',5343),('replay','REPLAY',5358),('heaven','A TASTE OF HEAVEN',5401),('elephant','THE BROWN ELEPHANT',5404),('colectivo','COLECTIVO COFFEE',5425),('lobo','PIZZA LOBO',5457),('tea','ELI TEA BAR',5507),('cip','CHICAGO INTEGRATIVE',5537),('studio','THE COFFEE STUDIO',5628)]
 scene=bpy.data.scenes.new('CIP_Sample_'+str(len(bpy.data.scenes)))
@@ -67,18 +78,29 @@ def bench(x,y):
     for d in [-.65,.65]:cube('leg',(x,y+d,.3),(.55,.12,.6),'black')
 
 end=streets[-1]['y']
-cube('ground',(-4,end/2,-.25),(92,end+45,.4),'green')
-for i in range(-10,math.ceil(end)+11):
-    x=road(i)
-    cube('road',(x,i,-.015),(layout['roadHalfWidth']*2,1.08,.1),'road')
+cube('ground',(-4,end/2,-.25),(92,end+180,.4),'green')
+# Connected sheared prisms follow the researched centerline exactly. Independent
+# axis-aligned one-meter boxes made every road/curb edge look like a staircase.
+def ribbon(y0,y1,offset,width,z,height,material):
+    v,f=batches.setdefault(('world',material),([],[]));i=len(v)
+    for level in [z-height/2,z+height/2]:
+        v.extend([(road(y0)+offset-width/2,y0,level),(road(y0)+offset+width/2,y0,level),
+                  (road(y1)+offset+width/2,y1,level),(road(y1)+offset-width/2,y1,level)])
+    f.extend([tuple(i+j for j in face) for face in [(0,3,2,1),(4,5,6,7),(0,1,5,4),(1,2,6,5),(2,3,7,6),(3,0,4,7)]])
+knots=sorted(set([-90]+[s['y'] for s in streets]+list(range(0,math.ceil(end)))+[end+90]))
+for a,b in zip(knots,knots[1:]):
+    ribbon(a,b,0,layout['roadHalfWidth']*2,-.015,.1,'road')
     for side in [-1,1]:
-        cube('bike lane',(x+side*layout['bikeCenter'],i,.055),(layout['bikeWidth'],1.08,.04),'bikeLane')
-        cube('bike lane boundary',(x+side*(layout['bikeCenter']-layout['bikeWidth']/2),i,.085),(.10,1.08,.025),'white')
-        cube('sidewalk',(x+side*layout['sidewalkCenter'],i,.1),(layout['sidewalkWidth'],1.04,.3),'pavement')
-        cube('curb',(x+side*(layout['roadHalfWidth']+.07),i,.2),(.15,1.03,.32),'stone')
+        ribbon(a,b,side*layout['bikeCenter'],layout['bikeWidth'],.055,.04,'bikeLane')
+        ribbon(a,b,side*(layout['bikeCenter']-layout['bikeWidth']/2),.10,.085,.025,'white')
+        ribbon(a,b,side*layout['sidewalkCenter'],layout['sidewalkWidth'],.1,.3,'pavement')
+        ribbon(a,b,side*(layout['roadHalfWidth']+.07),.15,.2,.32,'stone')
+for i in range(-90,math.ceil(end)+91):
+    x=road(i)
+    for side in [-1,1]:
         if i%2==0:cube('pavementJoint',(x+side*layout['sidewalkCenter'],i,.26),(layout['sidewalkWidth'],.026,.008),'grout')
     if i%3==0 and all(abs(i-s['y'])>3 for s in streets):
-        for side in [-1,1]:cube('centerline',(x+side*.18,i,.05),(.08,1.65,.025),'yellow')
+        for side in [-1,1]:ribbon(i-.825,i+.825,side*.18,.08,.05,.025,'yellow')
 for s in streets:
     x,y=s['x'],s['y'];cube('cross street',(x,y,.08),(layout['sideStreetReach']*2,layout['crossStreetWidth'],.12),'road')
     for side in [-1,1]:

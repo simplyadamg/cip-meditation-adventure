@@ -1,0 +1,4 @@
+.compass{position:relative;width:76px;height:76px;flex:0 0 76px;border:1px solid #e8d59b88;border-radius:50%;background:#143f35e8;box-shadow:inset 0 0 0 7px #e8d59b0d}
+.compass>span{position:absolute;left:calc(50% - 5px);top:calc(50% - 8px);font-size:12px;font-weight:600;line-height:16px;color:#efe4c1;width:10px;text-align:center}
+.compass #direction-arrow{left:calc(50% - 12px);top:calc(50% - 20px);width:24px;height:40px;font-size:35px;line-height:40px;color:#ffe292;transform-origin:50% 50%;display:block}
+.guidance{align-items:center;gap:12px}

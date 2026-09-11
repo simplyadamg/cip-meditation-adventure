@@ -15,6 +15,17 @@ export function circleIntersectsRect(x:number,y:number,radius:number,rect:Rect) 
 }
 
 export interface Point {x:number;y:number;}
+/** Up/down track the street; blocked forward steps cannot drift sideways. */
+export function moveAlongStreet(position:Point,dx:number,dy:number,amount:number,road:(y:number)=>number,clear:(x:number,y:number)=>boolean):Point{
+ const steps=Math.max(1,Math.ceil(amount/.1));let y=position.y,lane=position.x-road(y);
+ for(let i=0;i<steps;i++){
+   const nextY=y+dy*amount/steps;
+   if(clear(road(nextY)+lane,nextY))y=nextY;
+   const nextLane=lane+dx*amount/steps;
+   if(clear(road(y)+nextLane,y))lane=nextLane;
+ }
+ return {x:road(y)+lane,y};
+}
 /** Substeps prevent tunnelling; axis separation lets the body slide along edges. */
 export function moveBody(position:Point,delta:Point,canOccupy:(x:number,y:number)=>boolean):Point {
  const steps=Math.max(1,Math.ceil(Math.hypot(delta.x,delta.y)/.12));
