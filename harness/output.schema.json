@@ -1,0 +1,12 @@
+{
+  "type":"object",
+  "properties":{
+    "status":{"type":"string","enum":["progress","blocked","ready_for_review"]},
+    "featureId":{"type":"string"},
+    "summary":{"type":"string"},
+    "evidence":{"type":"array","items":{"type":"string"}},
+    "nextAction":{"type":"string"}
+  },
+  "required":["status","featureId","summary","evidence","nextAction"],
+  "additionalProperties":false
+}

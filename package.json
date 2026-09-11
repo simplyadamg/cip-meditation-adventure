@@ -1,0 +1,18 @@
+{
+  "name":"cip-meditation-adventure",
+  "private":true,
+  "version":"0.1.0",
+  "type":"module",
+  "scripts":{
+    "dev":"vite --host 127.0.0.1",
+    "build":"tsc --noEmit && vite build",
+    "typecheck":"tsc --noEmit",
+    "test":"node --experimental-strip-types --test tests/*.test.ts",
+    "check":"npm run typecheck && npm test && npm run build",
+    "harness:once":"node scripts/harness.mjs --iterations 1",
+    "harness:loop":"node scripts/harness.mjs",
+    "harness:dry-run":"node scripts/harness.mjs --dry-run"
+  },
+  "dependencies":{"three":"^0.180.0"},
+  "devDependencies":{"@types/three":"^0.180.0","typescript":"^5.9.2","vite":"^7.1.5"}
+}

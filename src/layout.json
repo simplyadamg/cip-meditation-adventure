@@ -1,0 +1,14 @@
+{
+  "roadHalfWidth": 10,
+  "bikeCenter": 8.3,
+  "bikeWidth": 2.6,
+  "carCenter": 3.8,
+  "sidewalkCenter": 13,
+  "sidewalkWidth": 6,
+  "walkingCenter": 12.7,
+  "buildingCenter": 20,
+  "treeCenter": 11,
+  "benchCenter": 14.8,
+  "crossStreetWidth": 7,
+  "sideStreetReach": 32
+}

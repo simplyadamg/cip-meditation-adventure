@@ -1,0 +1,217 @@
+{
+  "provider": "Google Geocoding API",
+  "checkedAt": "2026-09-10",
+  "note": "Address coordinates verified; not confirmation of current tenants or facades.",
+  "results": [
+    {
+      "query": "5200 N Clark St",
+      "status": "OK",
+      "address": "5200 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.976316,
+        "lng": -87.66875600000002
+      },
+      "placeId": "ChIJq3XVE4jRD4gRjxNnVsC5pTw"
+    },
+    {
+      "query": "5211 N Clark St",
+      "status": "OK",
+      "address": "5211 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9766451,
+        "lng": -87.668015
+      },
+      "placeId": "ChIJ-4OUCojRD4gRBXro6I-V0Uw"
+    },
+    {
+      "query": "5233 N Clark St",
+      "status": "OK",
+      "address": "5233 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9772699,
+        "lng": -87.6681332
+      },
+      "placeId": "ChIJqZUveIjRD4gRPkAKuG1R5ak"
+    },
+    {
+      "query": "5247 N Clark St",
+      "status": "OK",
+      "address": "5247 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9776167,
+        "lng": -87.6680203
+      },
+      "placeId": "ChIJAQdgf4jRD4gRANTDiKHPeHo"
+    },
+    {
+      "query": "5248 N Clark St",
+      "status": "OK",
+      "address": "Inside Cheetah Gym, 5248 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9775706,
+        "lng": -87.6686118
+      },
+      "placeId": "ChIJYyugfIjRD4gRnX8Zq2lds-w"
+    },
+    {
+      "query": "5318 N Clark St",
+      "status": "OK",
+      "address": "5318 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9786254,
+        "lng": -87.66864749999999
+      },
+      "placeId": "ChIJRdyHmojRD4gRzgUVvlMQh9w"
+    },
+    {
+      "query": "5343 N Clark St",
+      "status": "OK",
+      "address": "5343 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9793525,
+        "lng": -87.6679379
+      },
+      "placeId": "ChIJ-ynEoIjRD4gRJYKl4uWA7m0"
+    },
+    {
+      "query": "5358 N Clark St",
+      "status": "OK",
+      "address": "5358 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9797159,
+        "lng": -87.66852899999999
+      },
+      "placeId": "ChIJ33NfpYjRD4gRsNiwl07ZCVA"
+    },
+    {
+      "query": "5401 N Clark St",
+      "status": "OK",
+      "address": "5401 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9799916,
+        "lng": -87.6680196
+      },
+      "placeId": "ChIJ77XwqYjRD4gRZzf-PUMvvV4"
+    },
+    {
+      "query": "5404 N Clark St",
+      "status": "OK",
+      "address": "5404 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.980129,
+        "lng": -87.668463
+      },
+      "placeId": "ChIJb6KxrYjRD4gRsCh_jGGlFZc"
+    },
+    {
+      "query": "5425 N Clark St",
+      "status": "OK",
+      "address": "5425 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9805892,
+        "lng": -87.6678609
+      },
+      "placeId": "ChIJd-Mp_4XRD4gR3XaxT2KIDoI"
+    },
+    {
+      "query": "5457 N Clark St",
+      "status": "OK",
+      "address": "5457 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9814421,
+        "lng": -87.6679379
+      },
+      "placeId": "ChIJm2_g9IXRD4gRBboVKNi1uuI"
+    },
+    {
+      "query": "5507 N Clark St",
+      "status": "OK",
+      "address": "5507 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9820096,
+        "lng": -87.6681547
+      },
+      "placeId": "ChIJuXRRYo_RD4gRSRXBgrwNbx4"
+    },
+    {
+      "query": "5628 N Clark St",
+      "status": "OK",
+      "address": "5628 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.984294,
+        "lng": -87.66910800000001
+      },
+      "placeId": "ChIJG5Y46o_RD4gRFPULwVVuODw"
+    },
+    {
+      "query": "N Clark St and W Foster Ave",
+      "status": "OK",
+      "address": "W Foster Ave & N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9761938,
+        "lng": -87.6683934
+      },
+      "placeId": "EjFXIEZvc3RlciBBdmUgJiBOIENsYXJrIFN0LCBDaGljYWdvLCBJTCA2MDY0MCwgVVNBImYiZAoUChIJyyPxDojRD4gRbxNg6W4vbcoSFAoSCcsj8Q6I0Q-IEW8TYOluL23KGhQKEgnpxfDYJ8wPiBH6bI0i_DU71hoUChIJj8NHBLTTD4gRS15BPNATYAsiCg0SDwUZFWLdvss"
+    },
+    {
+      "query": "N Clark St and W Berwyn Ave",
+      "status": "OK",
+      "address": "W Berwyn Ave & N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9780235,
+        "lng": -87.668357
+      },
+      "placeId": "EjFXIEJlcnd5biBBdmUgJiBOIENsYXJrIFN0LCBDaGljYWdvLCBJTCA2MDY0MCwgVVNBImYiZAoUChIJk0zahojRD4gRJWA4JuXQJsoSFAoSCZNM2oaI0Q-IESVgOCbl0CbKGhQKEgmzYAKs99EPiBGC-88ChNZd7RoUChIJj8NHBLTTD4gRS15BPNATYAsiCg2LVgUZFc7evss"
+    },
+    {
+      "query": "N Clark St and W Balmoral Ave",
+      "status": "OK",
+      "address": "W Balmoral Ave & N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9798514,
+        "lng": -87.66828369999999
+      },
+      "placeId": "EjNXIEJhbG1vcmFsIEF2ZSAmIE4gQ2xhcmsgU3QsIENoaWNhZ28sIElMIDYwNjQwLCBVU0EiZiJkChQKEgmfv9WoiNEPiBESrKusxr7eCxIUChIJn7_VqIjRD4gREqyrrMa-3gsaFAoSCRsT7yP30Q-IEXS-e_V5ayMDGhQKEgmPw0cEtNMPiBFLXkE80BNgCyIKDfKdBRkVq-G-yw"
+    },
+    {
+      "query": "N Clark St and W Catalpa Ave",
+      "status": "OK",
+      "address": "W Catalpa Ave & N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9816765,
+        "lng": -87.6684324
+      },
+      "placeId": "EjJXIENhdGFscGEgQXZlICYgTiBDbGFyayBTdCwgQ2hpY2FnbywgSUwgNjA2NDAsIFVTQSJmImQKFAoSCVunoWeP0Q-IEeZTWNXYGQutEhQKEglbp6Fnj9EPiBHmU1jV2BkLrRoUChIJW62_2_DRD4gR20GBtgtIRkcaFAoSCY_DRwS00w-IEUteQTzQE2ALIgoNPeUFGRXc277L"
+    },
+    {
+      "query": "N Clark St and W Bryn Mawr Ave",
+      "status": "OK",
+      "address": "W Bryn Mawr Ave & N Clark St, Chicago, IL 60660, USA",
+      "location": {
+        "lat": 41.9834932,
+        "lng": -87.66876049999999
+      },
+      "placeId": "EjRXIEJyeW4gTWF3ciBBdmUgJiBOIENsYXJrIFN0LCBDaGljYWdvLCBJTCA2MDY2MCwgVVNBImYiZAoUChIJX0iJkI_RD4gRAbEKaIxriWUSFAoSCV9IiZCP0Q-IEQGxCmiMa4llGhQKEgkXfyJ3nM4PiBF7qOOEsEv6uRoUChIJj8NHBLTTD4gRS15BPNATYAsiCg00LAYZFQvPvss"
+    },
+    {
+      "query": "N Clark St and W Olive Ave",
+      "status": "OK",
+      "address": "W Olive Ave & N Clark St, Chicago, IL 60660, USA",
+      "location": {
+        "lat": 41.9844313,
+        "lng": -87.6689638
+      },
+      "placeId": "EjBXIE9saXZlIEF2ZSAmIE4gQ2xhcmsgU3QsIENoaWNhZ28sIElMIDYwNjYwLCBVU0EiZiJkChQKEglncDjpj9EPiBHmRtYHnSEDahIUChIJZ3A46Y_RD4gR5kbWB50hA2oaFAoSCWdABsaP0Q-IEbjTFKR8YY3mGhQKEgmPw0cEtNMPiBFLXkE80BNgCyIKDdlQBhkVGse-yw"
+    },
+    {
+      "query": "5537 N Clark St",
+      "status": "OK",
+      "address": "5537 N Clark St, Chicago, IL 60640, USA",
+      "location": {
+        "lat": 41.9827803,
+        "lng": -87.6684344
+      },
+      "placeId": "ChIJg0nIeI_RD4gRogDrPFUhgao"
+    }
+  ]
+}
